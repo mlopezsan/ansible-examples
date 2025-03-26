@@ -2,17 +2,24 @@
 - name: Copiar archivo sudoers prueba
   hosts: all  # O especifica un grupo como "webservers"
   become: yes  # Necesario para manipular /etc/sudoers.d/
+  vars:
+    archivo_origen: "sistemas"           # Nombre del archivo en el proyecto AWX
+    archivo_destino: "/etc/sudoers.d/sistemas"  # Ruta destino en los nodos
   tasks:
-    - name: Hacer backup del archivo existente
+    - name: Hacer backup del archivo existente (en nodos destino)
       ansible.builtin.copy:
-        src: /etc/sudoers.d/sistemas
-        dest: /etc/sudoers.d/sistemas.bak
+        src: "{{ archivo_destino }}"
+        dest: "{{ archivo_destino }}.bak"
         remote_src: yes
-    - name: Copiar archivo prueba a los nodos
+      when: ansible.builtin.stat(path="{{ archivo_destino }}").exists
+      tags: backup
+
+    - name: Copiar archivo sistemas a los nodos
       ansible.builtin.copy:
-        src: /etc/sudoers.d/sistemas
-        dest: /etc/sudoers.d/sistemas_new
+        src: "{{ playbook_dir }}/{{ archivo_origen }}"
+        dest: "{{ archivo_destino }}"
         owner: root
         group: root
         mode: "0440"  # Permisos seguros para sudoers
-        remote_src: no  # Copia desde el controlador (AWX)
+        remote_src: no  # Copia desde el directorio del proyecto AWX
+      tags: copiar
