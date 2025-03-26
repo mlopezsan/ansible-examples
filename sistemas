@@ -1,0 +1,5 @@
+## Permitimos sudo al grupo sistemas
+%sistemas       ALL=(ALL)       ALL
+
+## Establecemos un timeout en minutos para que vuelva a pedir password
+Defaults timestamp_timeout=10
